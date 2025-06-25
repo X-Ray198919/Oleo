@@ -4,7 +4,7 @@ import openai
 from flask import Flask, request
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = "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"
 
 bot = telebot.TeleBot(TOKEN)
 openai.api_key = OPENAI_API_KEY
