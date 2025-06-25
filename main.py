@@ -1,30 +1,27 @@
 import os
 import telebot
-import openai
+from openai import OpenAI
 from flask import Flask, request
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 bot = telebot.TeleBot(TOKEN)
-openai.api_key = OPENAI_API_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
-        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": message.text}
-    ]
-)
-bot.send_message(message.chat.id, response.choices[0].message.content)
-
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": message.text}
+            ]
+        )
+        bot.send_message(message.chat.id, response.choices[0].message.content)
     except Exception as e:
         bot.send_message(message.chat.id, f"Error: {str(e)}")
 
