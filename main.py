@@ -1,43 +1,42 @@
+
 import telebot
 import openai
-from flask import Flask, request
+import flask
+import os
+import requests
 
-# 🔑 ВСТАВ СЮДИ СВІЙ OpenAI API-КЛЮЧ
+TOKEN = "7527902782:AAGIvqAiL2EksXHFRAvHbK4-xrirMYSzo9s"
+bot = telebot.TeleBot(TOKEN)
+app = flask.Flask(__name__)
+
 openai.api_key = "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"
 
-# 🔧 Твій Telegram Bot Token
-bot = telebot.TeleBot("7527902782:AAGIvqAiL2EksXHFRAvHbK4-xrirMYSzo9s")
-
-# 🌐 Flask-сервер
-app = Flask(__name__)
-
-@app.route('/', methods=['GET'])
-def home():
-    return 'Бот активний!'
-
-@app.route('/', methods=['POST'])
-def receive_update():
-    json_str = request.get_data().decode('UTF-8')
-    update = telebot.types.Update.de_json(json_str)
+@app.route(f"/{TOKEN}", methods=["POST"])
+def receive_message():
+    json_string = flask.request.get_data().decode("utf-8")
+    update = telebot.types.Update.de_json(json_string)
     bot.process_new_updates([update])
-    return ''
+    return "!", 200
 
-# 🤖 Обробка повідомлень
 @bot.message_handler(func=lambda message: True)
-def chat_with_gpt(message):
+def echo_all(message):
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # gpt-4 не підключено
-            messages=[
-                {"role": "user", "content": message.text}
-            ]
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": message.text}]
         )
-        bot.reply_to(message, response['choices'][0]['message']['content'])
+        bot.reply_to(message, response.choices[0].message["content"])
     except Exception as e:
-        bot.reply_to(message, f"Помилка: {str(e)}")
+        bot.reply_to(message, f"❌ Error: {str(e)}")
 
-# 🚀 Запуск сервера
+@app.route("/", methods=["GET"])
+def index():
+    return "Бот працює 🟢"
+
+# Встановлення webhook при кожному запуску
+WEBHOOK_URL = f"https://oleo.onrender.com/{TOKEN}"
+set_hook_url = f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={WEBHOOK_URL}"
+requests.get(set_hook_url)
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
-
-
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
