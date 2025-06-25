@@ -6,7 +6,7 @@ import openai
 TOKEN = "7527902782:AAGIvqAiL2EksXHFRAvHbK4-xrirMYSzo9s"
 bot = telebot.TeleBot(TOKEN)
 
-openai.api_key = "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"
+openai.api_key = "YOUR_API_KEY"
 
 app = Flask(__name__)
 
